@@ -18,5 +18,14 @@ N/A
 
 ## Release Notes
 
-### 0.0.1
-Support basic feature to convert C# POCO classes to TypeScript
+### [0.0.2] - 2019-03-27
+
+- Initial release
+
+### [0.0.3] - 2019-03-28
+
+- Support enums
+- Support initializers (property and field) 
+- Supoort calling base constructor
+- Support lambda expression in properties
+- Fix bugs
