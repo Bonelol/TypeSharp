@@ -14,3 +14,4 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Support initializers (property and field) 
 - Supoort calling base constructor
 - Support lambda expression in properties
+- Fix bugs
