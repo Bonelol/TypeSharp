@@ -17,11 +17,17 @@
 }
 
 start 
-= u:using_statments? __ n:namespace_block (__ namespace_block)* EOL {
+= u:using_statments? __ n:namespace_blocks? __ c:class_definition* {
     return {
         using_statments: u,
-        namespace_blocks: [n]
+        namespace_blocks: n,
+        classes: c
     }
+}
+
+namespace_blocks
+= n:namespace_block (__ namespace_block)* {
+    return [n]
 }
 
 comments_list

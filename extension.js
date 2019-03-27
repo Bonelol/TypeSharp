@@ -28,9 +28,9 @@ function activate(context) {
             return;
         }
         
-        const language = vscode.window.activeTextEditor.document.languageId;
-        const isTypeScript = language === 'typescript';
-        const isJavaScript = language === 'javascript';
+        // const language = vscode.window.activeTextEditor.document.languageId;
+        // const isTypeScript = language === 'typescript';
+        // const isJavaScript = language === 'javascript';
 
         // if(!isTypeScript && !isJavaScript) {
         //     return;
@@ -38,8 +38,8 @@ function activate(context) {
 
         try {
             const parsed = parser.parse(content);
-            const classes = flatMap(parsed.namespace_blocks, namespace => namespace.classes);
-            const classOutputs = classes.map(c => createClassOutput(c, isTypeScript));
+            const classes = parsed.classes ? parsed.classes : flatMap(parsed.namespace_blocks, namespace => namespace.classes);
+            const classOutputs = classes.map(c => createClassOutput(c, true));
 
             editor.edit(builder => {
                 const document = editor.document;

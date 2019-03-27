@@ -19,7 +19,7 @@
 		"commands": [
 			{
 				"command": "extension.typesharp.convert",
-				"title": "Convert to TypeScript"
+				"title": "Convert C# to TypeScript"
 			}
         ],
         
