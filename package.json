@@ -3,7 +3,7 @@
 	"displayName": "TypeSharp",
 	"description": "Convert C# POCOs to TypeScript",
     "version": "0.0.1",
-    "publisher": "Max Meng",
+    "publisher": "MaxMeng",
     "repository": "https://github.com/Bonelol/TypeSharp",
 	"engines": {
 		"vscode": "^1.32.0"
