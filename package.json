@@ -2,7 +2,7 @@
 	"name": "typesharp",
 	"displayName": "TypeSharp",
 	"description": "Convert C# POCOs to TypeScript",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "publisher": "bonelol",
     "repository": "https://github.com/Bonelol/TypeSharp",
 	"engines": {

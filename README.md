@@ -6,7 +6,7 @@ Convert C# POCOs to TypeScript
 
 In editor window press CTL+ALT+T OR run command 'Convert C# to TypeScript'
 
-![animation](https://github.com/Bonelol/TypeSharp/blob/master/images/animation.gif)
+![animation](https://raw.githubusercontent.com/Bonelol/TypeSharp/master/images/animation.gif)
 
 ## Requirements
 

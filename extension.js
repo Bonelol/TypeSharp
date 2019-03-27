@@ -38,7 +38,7 @@ function activate(context) {
 
         try {
             const parsed = parser.parse(content);
-            const classes = parsed.classes ? parsed.classes : flatMap(parsed.namespace_blocks, namespace => namespace.classes);
+            const classes = parsed.classes && parsed.classes.length > 0 ? parsed.classes : flatMap(parsed.namespace_blocks, namespace => namespace.classes);
             const classOutputs = classes.map(c => createClassOutput(c, true));
 
             editor.edit(builder => {
@@ -117,6 +117,7 @@ const typeNameMappings = {
     'bool' :'boolean',
     'Boolean' :'boolean',
     'DateTime' :'Date',
+    'Task' : 'Promise',
 
     'IEnumerable' :'Array',
     'ICollection' :'Array',

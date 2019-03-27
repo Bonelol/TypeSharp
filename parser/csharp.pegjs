@@ -17,11 +17,12 @@
 }
 
 start 
-= u:using_statments? __ n:namespace_blocks? __ c:class_definition* {
+= u:using_statments? __ n:namespace_blocks? __ members:namespace_member* {
     return {
         using_statments: u,
         namespace_blocks: n,
-        classes: c
+        members: members,
+        classes: members.filter(m => m.type === 'class')
     }
 }
 
@@ -53,20 +54,25 @@ using_statments
 }
 
 using_statment
-= 'using' __ parts:[A-Za-z0-9_.]* __? SEMICOLON {
-    return parts.join('');
+= 'using' __ ident:ident __? SEMICOLON {
+    return ident;
 }
 
 namespace_block
-= 'namespace' __ parts:[A-Za-z0-9_.]*
+= 'namespace' __ ident:ident
 __ LBRACE
-__ classes:class_definition*
+__ members:namespace_member*
 __ RBRACE {
     return {
-        namespace: parts.join(''),
-        classes: classes
+        namespace: ident,
+        members: members,
+        classes: members.filter(m => m.type === 'class')
     }
 }
+
+namespace_member
+= class_definition
+/ enum_definition
 
 attribute_list
 = a:(__ attributes)* {
@@ -87,8 +93,8 @@ attribute
 }
 
 attribute_name
-= parts:[A-Za-z0-9_.]* {
-    return parts.join('')
+= ident:ident {
+    return ident
 }
 
 attribute_parameters
@@ -97,9 +103,9 @@ attribute_parameters
 }
 
 attribute_parameter
-= parts:[A-Za-z0-9_]* __ EQUALS __ v:attribute_parameter_value {
+= ident:ident __ EQUALS __ v:attribute_parameter_value {
     return {
-        name: parts.join(''),
+        name: ident,
         value: v
     }
 }
@@ -111,11 +117,15 @@ attribute_parameter
 }
 
 attribute_parameter_value
+= parameter_value
+
+parameter_value
 = TRUE
 / FALSE
 / NULL
-/ number:number+ { return number.join('') }
+/ digit:digit+ { return digit.join('') }
 / string
+/ new_operator
 
 string
 =  QUOTE parts:[^"]* QUOTE  { return '"' + parts.join('') + '"' }
@@ -146,8 +156,8 @@ __ RBRACE {
 }
 
 class_name
-= parts:[A-Za-z0-9_]* {
-    return parts.join('')
+= ident:ident {
+    return ident
 }
 
 class_generic_parameters
@@ -170,6 +180,7 @@ __ m:modifiers?
 __ n:class_name
 __ g:method_generic_parameters?
 __ LPAREN __ params:method_parameters __ RPAREN
+__ b:base_class_constructor?
 __ t:type_constraints?
 __ d:block? {
     return {
@@ -183,12 +194,77 @@ __ d:block? {
     }
 }
 
+base_class_constructor
+= COLON __ 'base' __ LPAREN __ head:ident tail:(__ COMMA __ ident) __ RPAREN {
+    const first = head.join('')
+    const others = tail.map(t => t[3].join(''))
+
+    return [first].concat(others)
+}
+
+base_class_constructor_parameter
+= ident
+/ parameter_value
+/ new_operator
+
+new_operator = NEW 
+__ i:ident 
+__ LPAREN
+__ p:new_operator_parameters? 
+__ RPAREN
+__ block? {
+    return {
+        type: 'new',
+        name: i,
+        parameters: p
+    }
+}
+
+new_operator_parameters
+= head:ident? tail:(__ COMMA __ ident)* {
+    return createList(head, tail)
+}
+
+enum_definition
+= a:attribute_list? 
+__ m:modifiers?
+__ 'enum' 
+__ n:ident
+__ (COLON __ type)?
+__ LBRACE
+__ members:enum_members
+__ RBRACE {
+    return {
+        attributes: a,
+        modifiers: m,
+        name: n,
+        members: members,
+        type: 'enum'
+    }
+}
+
+enum_members
+= head:enum_member tail:(__ COMMA __ enum_member)* {
+    return createList(head, tail)
+}
+
+enum_member
+= i:ident v:(__ EQUALS __ enum_value)? {
+    return {
+        name: i,
+        value: v
+    }
+}
+
+enum_value
+= number
+
 field_definition
 = __ a:attribute_list?
 __ m:modifiers?
 __ r:return_type
 __ n:field_name
-__ SEMICOLON {
+__ i:(SEMICOLON / object_initializer) {
     return {
         attributes: a,
         modifiers: m,
@@ -199,8 +275,8 @@ __ SEMICOLON {
 }
 
 field_name
-= parts:[A-Za-z0-9_.]* {
-    return parts.join('')
+= ident:ident {
+    return ident
 }
 
 property_definition
@@ -208,7 +284,8 @@ property_definition
 __ m:modifiers?
 __ r:return_type
 __ n:property_name
-__ l:((LBRACE __ accessor_list __ RBRACE)) {
+__ l:((LBRACE __ accessor_list __ RBRACE))
+__ i:object_initializer? {
     return {
         attributes: a,
         modifiers: m,
@@ -220,8 +297,13 @@ __ l:((LBRACE __ accessor_list __ RBRACE)) {
 }
 
 property_name
-= parts:[A-Za-z0-9_.]* {
-    return parts.join('')
+= ident:ident {
+    return ident
+}
+
+object_initializer
+= EQUALS __ p:parameter_value __ SEMICOLON {
+    return p
 }
 
 accessor_list
@@ -230,11 +312,22 @@ accessor_list
 }
 
 accessor
-= ak:accessor_keyword __ d:block? __ SEMICOLON? {
+= ak:accessor_keyword __ d:accessor_lambda_expression __ SEMICOLON {
     return {
         accessor_keyword: ak,        
         definition:d
     }
+} 
+/ak:accessor_keyword __ d:block? __ SEMICOLON? {
+    return {
+        accessor_keyword: ak,        
+        definition:d
+    }
+}
+
+accessor_lambda_expression
+= EQUALS __ parts:[^;]* {
+    return parts.join('')
 }
 
 accessor_keyword = 'get' / 'set'
@@ -263,8 +356,8 @@ __ d:block? {
     }
 }
 
-method_name = parts:[A-Za-z0-9_.]* {
-    return parts.join('')
+method_name = ident:ident {
+    return ident
 }
 
 method_generic_parameters
@@ -288,11 +381,11 @@ method_parameter
 = a:attribute_list? 
 __ k:method_parameter_keywords? 
 __ t:type
-__ parts:[A-Za-z0-9_]* {
+__ ident:ident {
     return {
         attributes: a,
         type:t,
-        name:parts.join(''),
+        name:ident,
         method_parameter_keyword: k
     }
 }
@@ -366,9 +459,9 @@ generic_type
     }
 }
 
-non_generic_type = parts:[A-Za-z0-9_]* __ q:QUESTION_MARK? {
+non_generic_type = ident:ident __ q:QUESTION_MARK? {
     return {
-        name: parts.join(''),
+        name: ident,
         base_type: null,
         generic_parameters: null,
         is_generic: false,
@@ -382,9 +475,9 @@ type_constraints
 }
 
 type_constraint
-= 'where' __ parts:[A-Za-z0-9_]* __ COLON __ head:type_constraint_arg tail:(__ COMMA __ type_constraint_arg)* {
+= 'where' __ ident:ident __ COLON __ head:type_constraint_arg tail:(__ COMMA __ type_constraint_arg)* {
     return {
-        type_constraint: parts.join(''),
+        type_constraint: ident,
         type_constraint_args: createList(head, tail)
     }
 }
@@ -426,15 +519,26 @@ modifier
 
 partial = 'partial'
 
-identifier
-= [A-Za-z0-9_]
+ident
+= parts:ident_part* {
+    return parts.join('')
+}
+
+ident_part
+= [A-Za-z0-9_.]
 
 number
+= d:digit* {
+    return d.join('')
+}
+
+digit
 = [0-9-.]
 
-TRUE = 'true'
-FALSE = 'false'
-NULL = 'null'
+TRUE          = 'true'
+FALSE         = 'false'
+NULL          = 'null'
+NEW           = 'new'
 
 //specail character
 DOT           = '.'
