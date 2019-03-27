@@ -38,8 +38,8 @@ function activate(context) {
 
         try {
             const parsed = parser.parse(content);
-            const classes = parsed.classes && parsed.classes.length > 0 ? parsed.classes : flatMap(parsed.namespace_blocks, namespace => namespace.classes);
-            const classOutputs = classes.map(c => createClassOutput(c, true));
+            const members = parsed.members && parsed.members.length > 0 ? parsed.members : flatMap(parsed.namespace_blocks, namespace => namespace.members);
+            const memberOutputs = members.map(c => createMemberOutput(c, true));
 
             editor.edit(builder => {
                 const document = editor.document;
@@ -48,7 +48,7 @@ function activate(context) {
                 const start = new vscode.Position(0, 0);
                 const end = new vscode.Position(document.lineCount - 1, lastLine.text.length);
     
-                builder.replace(new vscode.Range(start, end), classOutputs.join('\n'));
+                builder.replace(new vscode.Range(start, end), memberOutputs.join('\n'));
             }); 
         } catch (error) {
             console.log(error);
@@ -60,6 +60,18 @@ function activate(context) {
     });
 
 	context.subscriptions.push(disposable);
+}
+
+function createMemberOutput(member, outputTs) {
+    if(member.type === 'class') {
+        return createClassOutput(member, outputTs);
+    }
+
+    if(member.type === 'enum' && outputTs) {
+        return createEnumOutput(member);
+    }
+
+    return '';
 }
 
 function createClassOutput(c, outputTs) {
@@ -86,6 +98,15 @@ function createTypeOutput(type) {
     const output = `${typeName}<${type.generic_parameters.map(parameter => createTypeOutput(parameter)).join(',')}>`
 
     return output;
+}
+
+function createEnumOutput(e) {
+    const memberOuts = e.members.map(p => createEnumMemberOutput(p));
+    return `export enum ${e.name} {\n${TAB}${memberOuts.join(`,\n${TAB}`)}\n}`
+}
+
+function createEnumMemberOutput(member) {
+    return member.value == null ? member.name : `${member.name} = ${member.value}`
 }
 
 function checkTypeName(name) {

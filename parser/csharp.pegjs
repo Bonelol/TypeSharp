@@ -230,7 +230,7 @@ enum_definition
 __ m:modifiers?
 __ 'enum' 
 __ n:ident
-__ (COLON __ type)?
+__ t:(COLON __ type)?
 __ LBRACE
 __ members:enum_members
 __ RBRACE {
@@ -239,20 +239,21 @@ __ RBRACE {
         modifiers: m,
         name: n,
         members: members,
-        type: 'enum'
+        type: 'enum',
+        enum_type: t ? t[2] : null
     }
 }
 
 enum_members
 = head:enum_member tail:(__ COMMA __ enum_member)* {
-    return createList(head, tail)
+    return createList(head, tail).filter(e => e.name)
 }
 
 enum_member
 = i:ident v:(__ EQUALS __ enum_value)? {
     return {
         name: i,
-        value: v
+        value: v ? v[3] : null
     }
 }
 
