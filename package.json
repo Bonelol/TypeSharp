@@ -1,0 +1,44 @@
+{
+	"name": "typesharp",
+	"displayName": "TypeSharp",
+	"description": "Convert C# POCOs to TypeScript",
+    "version": "0.0.1",
+    "publisher": "Max Meng",
+    "repository": "https://github.com/Bonelol/TypeSharp",
+	"engines": {
+		"vscode": "^1.32.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:extension.typesharp.convert"
+	],
+	"main": "./extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.typesharp.convert",
+				"title": "Convert to TypeScript"
+			}
+        ],
+        
+		"keybindings": [
+			{
+				"command": "extension.typesharp.convert",
+				"key": "ctrl+alt+t"
+			}
+		]
+	},
+	"scripts": {
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "node ./node_modules/vscode/bin/test"
+	},
+	"devDependencies": {
+		"typescript": "^3.3.1",
+		"vscode": "^1.1.28",
+		"eslint": "^5.13.0",
+		"@types/node": "^10.12.21",
+		"@types/mocha": "^2.2.42"
+	}
+}
