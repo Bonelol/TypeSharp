@@ -12,7 +12,8 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.typesharp.convert"
+        "onCommand:extension.typesharp.convert",
+        "onCommand:extension.typesharp.open"
 	],
 	"main": "./extension.js",
 	"contributes": {
@@ -20,6 +21,10 @@
 			{
 				"command": "extension.typesharp.convert",
 				"title": "Convert C# to TypeScript"
+            },
+            {
+				"command": "extension.typesharp.open",
+				"title": "Open TypeSharp convert window"
 			}
         ],
         

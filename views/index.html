@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Coding</title>
+    <style>
+        #fileList {
+            overflow-y: auto;
+            margin-right: 16px;                      
+            min-width: 480px;
+        }
+
+        #options > div + div {
+            margin-top: 8px;
+        }
+
+        .monaco-text-button {
+            color: rgb(255, 255, 255);
+            background-color: rgb(14, 99, 156);
+            box-sizing: border-box;
+            display: inline-block;
+            padding: 4px 32px;
+            text-align: center;
+            cursor: pointer;
+            outline-offset: 2px!important;
+            text-decoration: none;
+        }
+
+        .monaco-text-button:hover {
+            color: rgb(255, 255, 255);
+            background-color: rgb(17, 119, 187);
+        }
+
+        .file-item {
+            padding: 6px;
+            /* display: flex; */
+            background: #303031;
+        }        
+
+        .file-item + .file-item {
+            margin-top: 2px;
+        }
+
+        .file-item span {
+            margin-left: 4px;
+        }
+
+        #options > div + div {
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>TypeSharp</h1>
+        <div><a class="monaco-text-button" onclick="openFromFiles()">Select Files</a></div>
+        <div style="display:flex; padding-top: 16px; padding-bottom: 16px;">
+            <div id="fileList" style="display:none;">
+
+            </div>
+            <div style="width:320px;">
+                <div id="options" style="display:none; text-align: right;">
+                    <div><a class="monaco-text-button" onclick="openFromFiles()">Convert</a></div>
+                    <div>                        
+                        <div>
+                            <label><input type="checkbox" name="interface"></input>Export as interface</label>
+                        </div>
+                    </div>
+                    <div>
+                        <h5>Property Naming Conventions</h5>
+                        <div>
+                            <label><input type="radio" name="convention"></input>No change</label>
+                            <label><input type="radio" name="convention"></input>Camel</label>
+                            <label><input type="radio" name="convention"></input>Pascal</label>
+                        </div>
+                    </div>
+                    <div>
+                        <h5>Overwrite existed files?</h5>
+                        <div>
+                            <label><input type="radio" name="overwrite"></input>Yes</label>
+                            <label><input type="radio" name="overwrite"></input>No</label>
+                            <label><input type="radio" name="overwrite"></input>Append</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    const vscode = acquireVsCodeApi();
+    const cachedStore = vscode.getState() || vscode.setState({});
+    console.log(cachedStore);
+
+    function openFromFiles() {
+        vscode.postMessage({
+            command: 'open.filePicker'
+        });
+    }
+
+    function updateFiles(files, store) {
+        store.files = files.map(f => {
+            const parts = f.path.split('/');
+            return {
+                path: f.path,
+                scheme: f.scheme,
+                $mid: f.$mid,
+                name: parts[parts.length - 1]
+            };
+        });
+
+        updateFileListView(store.files);
+    }
+
+    function updateFileListView(files) {
+        const list = document.getElementById('fileList');
+
+        if(!files || !files.length) {
+            const options = document.getElementById('options');
+            options.style.display = 'none';
+            list.style.display = 'none';
+            return '';
+        }
+
+        const innerHtml = files.map(f => {
+            return createFileItemView(f);
+        }).join('');
+
+        list.innerHTML = innerHtml;
+        list.style.maxHeight = (window.innerHeight - 200) + 'px';
+        list.style.display = 'block';
+
+        const options = document.getElementById('options');
+        options.style.display = 'block';
+    }
+
+    function createFileItemView(file) {
+        return `<div class='file-item'><label><input type='checkbox'><span>${file.name}</span></label></div>`;
+    }
+
+    function handleMessage(message, store) {
+        switch (message.command) {
+            case 'update.fileList':
+                updateFiles(message.data, store)
+                break;
+        }
+    }
+
+    // Handle the message inside the webview
+    window.addEventListener('message', event => {
+        const message = event.data; // The JSON data our extension sent
+        handleMessage(message, cachedStore);
+        vscode.setState(cachedStore);
+    });
+
+    window.addEventListener('resize', event => {
+        const list = document.getElementById('fileList');
+        list.style.maxHeight = (window.innerHeight - 200) + 'px';
+    });
+
+    (function() {    
+        if(cachedStore && cachedStore.files) {
+            updateFileListView(cachedStore.files);
+        }
+    })();
+</script>
+</html>

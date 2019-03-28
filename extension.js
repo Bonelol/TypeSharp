@@ -1,6 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
+const path = require('path');
+const fs = require('fs');
 const parser = require('./parser/csharp');
 
 // this method is called when your extension is activated
@@ -13,9 +15,7 @@ function activate(context) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('extension.typesharp.convert', function () {
-		// The code you place here will be executed every time your command is executed
-
+	let disposable1 = vscode.commands.registerCommand('extension.typesharp.convert', function () {
         const editor = vscode.window.activeTextEditor;
 
         if(!editor){
@@ -28,8 +28,8 @@ function activate(context) {
             return;
         }
         
-        // const language = vscode.window.activeTextEditor.document.languageId;
-        // const isTypeScript = language === 'typescript';
+        const language = vscode.window.activeTextEditor.document.languageId;
+        const isTypeScript = language === 'typescript';
         // const isJavaScript = language === 'javascript';
 
         // if(!isTypeScript && !isJavaScript) {
@@ -40,6 +40,13 @@ function activate(context) {
             const parsed = parser.parse(content);
             const members = parsed.members && parsed.members.length > 0 ? parsed.members : flatMap(parsed.namespace_blocks, namespace => namespace.members);
             const memberOutputs = members.map(c => createMemberOutput(c, true));
+
+            if(!isTypeScript) {
+                var outputs = memberOutputs.join('\n');
+                vscode.workspace.openTextDocument({ language:'typescript', content: outputs })
+                    .then(doc => vscode.window.showTextDocument(doc, editor.viewColumn + 1));
+                return;
+            }
 
             editor.edit(builder => {
                 const document = editor.document;
@@ -59,7 +66,55 @@ function activate(context) {
         }
     });
 
-	context.subscriptions.push(disposable);
+    let disposable2 = vscode.commands.registerCommand('extension.typesharp.open', function () {
+        const panel = vscode.window.createWebviewPanel(
+            'typeSharp',
+            'TypeSharp',
+            vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                // Only allow the webview to access resources in our extension's media directory
+                localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'media'))]
+            }
+          );
+    
+        const indexFilePath = vscode.Uri.file(path.join(context.extensionPath, 'views', 'index.html'));
+        panel.webview.html = fs.readFileSync(indexFilePath.fsPath, 'utf8');
+
+        // Handle messages from the webview
+        panel.webview.onDidReceiveMessage(
+            message => handleMessage(panel.webview, message),
+            undefined,
+            context.subscriptions
+        );
+    });
+
+    context.subscriptions.push(disposable1);
+    context.subscriptions.push(disposable2);
+}
+
+function handleMessage(context, message) {
+    switch (message.command) {
+        case 'open.filePicker':
+            {
+                const options = {
+                    canSelectMany: true,
+                    openLabel: 'Open',
+                    filters: {
+                       'C# files': ['cs'],
+                       'All files': ['*']
+                   }
+               };
+           
+                vscode.window.showOpenDialog(options).then(fileUri => {
+                    context.postMessage({
+                        command: 'update.fileList',
+                        data: fileUri
+                    })
+                });
+            }
+            return;
+    }
 }
 
 function createMemberOutput(member, outputTs) {
