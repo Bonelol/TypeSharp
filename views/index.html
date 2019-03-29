@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cat Coding</title>
     <style>
-        #fileList {
-            overflow-y: auto;
+        #fileListWrapper {
             margin-right: 16px;                      
             min-width: 480px;
+        }
+
+        #fileList {
+            overflow-y: auto;
         }
 
         #options > div + div {
@@ -34,7 +37,7 @@
 
         .file-item {
             padding: 6px;
-            /* display: flex; */
+            display: flex;
             background: #303031;
         }        
 
@@ -46,44 +49,85 @@
             margin-left: 4px;
         }
 
+        .file-item > label {
+            width: 80%;
+            display: block;
+        }
+
+        .file-item.error > .file-item-misc {
+            display: block;
+            text-align: right;
+        }
+
+        .file-item > .file-item-misc {
+            display: none;
+            width: 20%;
+        }
+
         #options > div + div {
             margin-top: 16px;
+        }
+
+        span.icon-error {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: red;
+            border-radius: 10px;
+            color: #FFF;
+            text-align: center;
+            line-height: 16px;
+            font-weight: bold;
+            box-sizing: border-box;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <div>
         <h1>TypeSharp</h1>
+        <div>
+            Descriptions
+        </div>
         <div><a class="monaco-text-button" onclick="openFromFiles()">Select Files</a></div>
         <div style="display:flex; padding-top: 16px; padding-bottom: 16px;">
-            <div id="fileList" style="display:none;">
+            <div id="fileListWrapper" style="display:none;">
+                <div class='file-item'>
+                    <label><input type='checkbox' id='toggleAllCheckbox' onchange="toggleAll()" checked>
+                        <span>Select All</span>
+                    </label>
+                </div>
+                <div id="fileList">
 
+                </div>
             </div>
             <div style="width:320px;">
-                <div id="options" style="display:none; text-align: right;">
-                    <div><a class="monaco-text-button" onclick="openFromFiles()">Convert</a></div>
-                    <div>                        
+                <form id="optionForm">
+                    <div id="options" style="display:none; text-align: right;">
+                        <div><a class="monaco-text-button" onclick="convertSelectedFiles()">Convert</a></div>
+                        <div>                        
+                            <div>
+                                <label><input type="checkbox" name="interface"></input>Export as interface</label>
+                            </div>
+                        </div>
                         <div>
-                            <label><input type="checkbox" name="interface"></input>Export as interface</label>
+                            <h5>Property Naming Conventions</h5>
+                            <div>
+                                <label><input type="radio" name="convention" checked value='no'></input>No change</label>
+                                <label><input type="radio" name="convention" value='camel'></input>Camel</label>
+                                <label><input type="radio" name="convention" value='pascal'></input>Pascal</label>
+                            </div>
+                        </div>
+                        <div>
+                            <h5>Overwrite existed files?</h5>
+                            <div>
+                                <label><input type="radio" name="overwrite" checked value='yes'></input>Yes</label>
+                                <label><input type="radio" name="overwrite" value='no'></input>No</label>
+                                <label><input type="radio" name="overwrite" value='append'></input>Append</label>
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <h5>Property Naming Conventions</h5>
-                        <div>
-                            <label><input type="radio" name="convention"></input>No change</label>
-                            <label><input type="radio" name="convention"></input>Camel</label>
-                            <label><input type="radio" name="convention"></input>Pascal</label>
-                        </div>
-                    </div>
-                    <div>
-                        <h5>Overwrite existed files?</h5>
-                        <div>
-                            <label><input type="radio" name="overwrite"></input>Yes</label>
-                            <label><input type="radio" name="overwrite"></input>No</label>
-                            <label><input type="radio" name="overwrite"></input>Append</label>
-                        </div>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
@@ -99,14 +143,35 @@
         });
     }
 
+    function convertSelectedFiles() {
+        const selectedFiles = cachedStore.files.filter(f => f.checked);
+        console.log(selectedFiles);
+        const form = document.getElementById('optionForm');
+        const formData = new FormData(form);
+        const data = {
+            interface: formData.get('interface'),
+            convention: formData.get('convention'),
+            overwrite:  formData.get('overwrite'),
+            files: selectedFiles
+        }
+
+        vscode.postMessage({
+            command: 'convert.selectedFiles',
+            data: data
+        });
+    }
+
     function updateFiles(files, store) {
-        store.files = files.map(f => {
-            const parts = f.path.split('/');
+        store.files = files.map((f, i) => {
+            const path = f.path.charAt(0) === '/' ? f.path.substring(1) : f.path
+            const parts = path.split('/');
+
             return {
-                path: f.path,
+                path: path,
                 scheme: f.scheme,
-                $mid: f.$mid,
-                name: parts[parts.length - 1]
+                id: i,
+                name: parts[parts.length - 1],
+                checked: true
             };
         });
 
@@ -114,12 +179,13 @@
     }
 
     function updateFileListView(files) {
+        const wrapper = document.getElementById('fileListWrapper');
         const list = document.getElementById('fileList');
 
         if(!files || !files.length) {
             const options = document.getElementById('options');
             options.style.display = 'none';
-            list.style.display = 'none';
+            wrapper.style.display = 'none';
             return '';
         }
 
@@ -129,14 +195,39 @@
 
         list.innerHTML = innerHtml;
         list.style.maxHeight = (window.innerHeight - 200) + 'px';
-        list.style.display = 'block';
+        wrapper.style.display = 'block';
 
         const options = document.getElementById('options');
         options.style.display = 'block';
     }
 
     function createFileItemView(file) {
-        return `<div class='file-item'><label><input type='checkbox'><span>${file.name}</span></label></div>`;
+        const checked = file.checked ? 'checked' : '';
+        const error = file.error ? 'error' : '';
+        return `<div class='file-item ${error}' data-id=${file.id}>
+                <label>
+                    <input type='checkbox' data-id=${file.id} ${checked} onchange='fileCheckBoxOnChange(this)'>
+                    <span>${file.name}</span>
+                </label>
+                <div class='file-item-misc'><span class='icon-error'>!</span></div>
+            </div>`;
+    }
+
+    function updateResponse(files, store) {
+        store.files = files;
+        // const fileViews = document.getElementsByClassName('file-item');
+
+        // files.forEach(f => {
+        //     const view = document.querySelector(`.file-item[data-id='${f.id}']`);
+
+        //     if(f.error) {
+        //         view.classList.add('error');
+        //     } else {
+        //         view.classList.remove('error');
+        //     }
+        // });
+
+        updateFileListView(files)
     }
 
     function handleMessage(message, store) {
@@ -144,7 +235,46 @@
             case 'update.fileList':
                 updateFiles(message.data, store)
                 break;
+            case 'convert.response':
+                updateResponse(message.data, store)
+                break;
         }
+    }
+
+    function toggleAll() {
+        const checkbox = document.getElementById('toggleAllCheckbox');
+        const checked = checkbox.checked;
+
+        cachedStore.files.forEach(f => {
+            f.checked = checked;
+        });
+
+        updateFileListView(cachedStore.files);
+    }
+
+    function fileCheckBoxOnChange(self) {
+        const id = +self.getAttribute("data-id");
+        const file = cachedStore.files.find(f=> f.id == id);
+        file.checked = self.checked;
+
+        const count = cachedStore.files.reduce((f, c) => {
+            return f.checked ? c + 1 : c;
+        });
+
+        const checkbox = document.getElementById('toggleAllCheckbox');
+
+        if(count === cachedStore.files.length) {
+            checkbox.checked = true;
+            checkbox.indeterminate = false;
+        }else if(count === 0) {
+            checkbox.checked = false;
+            checkbox.indeterminate = false;
+        } else {
+            checkbox.checked = false;
+            checkbox.indeterminate = true;
+        }
+        
+        vscode.setState(cachedStore);
     }
 
     // Handle the message inside the webview

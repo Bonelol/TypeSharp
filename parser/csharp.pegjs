@@ -17,7 +17,7 @@
 }
 
 start 
-= u:using_statments? __ n:namespace_blocks? __ members:namespace_member* {
+= __ u:using_statments? __ n:namespace_blocks? __ members:namespace_member* {
     return {
         using_statments: u,
         namespace_blocks: n,

@@ -95,25 +95,60 @@ function activate(context) {
 
 function handleMessage(context, message) {
     switch (message.command) {
-        case 'open.filePicker':
-            {
-                const options = {
-                    canSelectMany: true,
-                    openLabel: 'Open',
-                    filters: {
-                       'C# files': ['cs'],
-                       'All files': ['*']
-                   }
-               };
-           
-                vscode.window.showOpenDialog(options).then(fileUri => {
-                    context.postMessage({
-                        command: 'update.fileList',
-                        data: fileUri
-                    })
-                });
-            }
+        case 'open.filePicker': {
+            const options = {
+                canSelectMany: true,
+                openLabel: 'Open',
+                filters: {
+                    'C# files': ['cs'],
+                    'All files': ['*']
+                }
+            };
+        
+            vscode.window.showOpenDialog(options).then(fileUri => {
+                context.postMessage({
+                    command: 'update.fileList',
+                    data: fileUri
+                })
+            });
             return;
+        }
+        case 'convert.selectedFiles': {
+            console.debug(message.data);
+            const options = {
+                canSelectFiles: false,
+                canSelectFolders:true,
+                filters: {
+                    'TypeScript files': ['ts'],
+                    'All files': ['*']
+                }
+            };
+        
+            vscode.window.showOpenDialog(options).then(fileUri => {
+
+                message.data.files.forEach(f => {
+                    try {
+                        let content = fs.readFileSync(f.path, 'utf8');
+    
+                        if(content.charCodeAt(0) == 65279) 
+                            content = content.substr(1)
+    
+                        const parsed = parser.parse(content);
+                        f.error = null;
+                        f.checked = false;
+                    } catch (error) {
+                        console.log(error);
+                        f.error = error;
+                    } 
+                });
+
+                context.postMessage({
+                    command: 'convert.response',
+                    data: message.data.files
+                })
+            });
+            return
+        }
     }
 }
 
