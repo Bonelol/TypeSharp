@@ -2,9 +2,9 @@
 	"name": "typesharp",
 	"displayName": "TypeSharp",
 	"description": "Convert C# POCOs to TypeScript",
-    "version": "0.0.3",
-    "publisher": "bonelol",
-    "repository": "https://github.com/Bonelol/TypeSharp",
+	"version": "0.1.0",
+	"publisher": "bonelol",
+	"repository": "https://github.com/Bonelol/TypeSharp",
 	"engines": {
 		"vscode": "^1.32.0"
 	},
@@ -12,8 +12,8 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:extension.typesharp.convert",
-        "onCommand:extension.typesharp.open"
+		"onCommand:extension.typesharp.convert",
+		"onCommand:extension.typesharp.open"
 	],
 	"main": "./extension.js",
 	"contributes": {
@@ -21,13 +21,12 @@
 			{
 				"command": "extension.typesharp.convert",
 				"title": "Convert C# to TypeScript"
-            },
-            {
+			},
+			{
 				"command": "extension.typesharp.open",
 				"title": "Open TypeSharp convert window"
 			}
-        ],
-        
+		],
 		"keybindings": [
 			{
 				"command": "extension.typesharp.convert",
@@ -45,5 +44,8 @@
 		"eslint": "^5.13.0",
 		"@types/node": "^10.12.21",
 		"@types/mocha": "^2.2.42"
+	},
+	"dependencies": {
+		"js-yaml": "^3.13.1"
 	}
 }

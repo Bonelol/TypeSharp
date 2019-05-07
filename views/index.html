@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cat Coding</title>
+    <title>TypeSharp</title>
     <style>
+        body > div > div + div {
+            margin-top: 16px;
+        }
+
         #fileListWrapper {
             margin-right: 16px;                      
             min-width: 480px;
@@ -45,8 +49,9 @@
             margin-top: 2px;
         }
 
-        .file-item span {
+        .file-item .icon {
             margin-left: 4px;
+            margin-right: 4px;
         }
 
         .file-item > label {
@@ -60,19 +65,18 @@
         }
 
         .file-item > .file-item-misc {
-            display: none;
             width: 20%;
+            text-align: right;
         }
 
         #options > div + div {
             margin-top: 16px;
         }
 
-        span.icon-error {
+        span.icon {
             display: inline-block;
             width: 16px;
             height: 16px;
-            background: red;
             border-radius: 10px;
             color: #FFF;
             text-align: center;
@@ -81,16 +85,24 @@
             box-sizing: border-box;
             cursor: pointer;
         }
+
+        span.icon.icon-error {
+            background: red;
+        }
+
+        span.icon.icon-created {
+            background: green;
+        }
     </style>
 </head>
 <body>
     <div>
         <h1>TypeSharp</h1>
         <div>
-            Descriptions
+            Convert C# POCOs to TypeScript
         </div>
         <div><a class="monaco-text-button" onclick="openFromFiles()">Select Files</a></div>
-        <div style="display:flex; padding-top: 16px; padding-bottom: 16px;">
+        <div style="display:flex; padding-top: 8px; padding-bottom: 8px;">
             <div id="fileListWrapper" style="display:none;">
                 <div class='file-item'>
                     <label><input type='checkbox' id='toggleAllCheckbox' onchange="toggleAll()" checked>
@@ -155,6 +167,10 @@
             files: selectedFiles
         }
 
+        if (!selectedFiles || selectedFiles.length === 0) {
+            return;
+        }
+
         vscode.postMessage({
             command: 'convert.selectedFiles',
             data: data
@@ -203,13 +219,20 @@
 
     function createFileItemView(file) {
         const checked = file.checked ? 'checked' : '';
-        const error = file.error ? 'error' : '';
-        return `<div class='file-item ${error}' data-id=${file.id}>
+        const error = file.error ? '<span class="icon icon-error">!</span>' : '';
+        const errorMsg = file.error ? `<span style='display:none;'>${(file.error.message || file.error).toString()}</span>` : '';
+        const created = file.created ? '<span class="icon icon-created">&#10003;</span>' : '';
+
+        if (file.error) {
+            console.log(file.error);
+        }
+
+        return `<div class='file-item' data-id=${file.id}>
                 <label>
                     <input type='checkbox' data-id=${file.id} ${checked} onchange='fileCheckBoxOnChange(this)'>
                     <span>${file.name}</span>
                 </label>
-                <div class='file-item-misc'><span class='icon-error'>!</span></div>
+                <div class='file-item-misc'>${error}${errorMsg}${created}</div>
             </div>`;
     }
 
@@ -227,7 +250,8 @@
         //     }
         // });
 
-        updateFileListView(files)
+        updateFileListView(files);
+        updateToggleAllCheckbox();
     }
 
     function handleMessage(message, store) {
@@ -238,6 +262,24 @@
             case 'convert.response':
                 updateResponse(message.data, store)
                 break;
+        }
+    }
+
+    function updateToggleAllCheckbox() {
+        const checkbox = document.getElementById('toggleAllCheckbox');
+        const count = cachedStore.files.reduce((c, f) => {
+            return f.checked ? c + 1 : c;
+        }, 0);
+
+        if(count === cachedStore.files.length) {
+            checkbox.checked = true;
+            checkbox.indeterminate = false;
+        }else if(count === 0) {
+            checkbox.checked = false;
+            checkbox.indeterminate = false;
+        } else {
+            checkbox.checked = false;
+            checkbox.indeterminate = true;
         }
     }
 
@@ -257,22 +299,7 @@
         const file = cachedStore.files.find(f=> f.id == id);
         file.checked = self.checked;
 
-        const count = cachedStore.files.reduce((f, c) => {
-            return f.checked ? c + 1 : c;
-        });
-
-        const checkbox = document.getElementById('toggleAllCheckbox');
-
-        if(count === cachedStore.files.length) {
-            checkbox.checked = true;
-            checkbox.indeterminate = false;
-        }else if(count === 0) {
-            checkbox.checked = false;
-            checkbox.indeterminate = false;
-        } else {
-            checkbox.checked = false;
-            checkbox.indeterminate = true;
-        }
+        updateToggleAllCheckbox();
         
         vscode.setState(cachedStore);
     }
