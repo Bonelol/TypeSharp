@@ -33,6 +33,13 @@ function registerOpenCommand(context) {
 
 function handleMessage(context, message) {
     switch (message.command) {
+        case 'open.folder': {
+            let uri = vscode.Uri.file(message.data);
+            vscode.commands.executeCommand('revealFileInOS', uri).then(function() {
+
+            });
+            return;
+        }
         case 'open.filePicker': {
             const options = {
                 canSelectMany: true,
@@ -79,6 +86,12 @@ function handleMessage(context, message) {
 }
 
 const handleOpenDialog = (context, path, files, options) => {
+    files.forEach(f => {
+        f.tsPath = null;
+        f.error = null;        
+        f.created = false;
+    });
+
     const file_member_map = {};
     const memberName_file_map = {};
     const filePromises = files.map(f => fs.promises.readFile(f.path, 'utf8').then(content => {
@@ -92,7 +105,6 @@ const handleOpenDialog = (context, path, files, options) => {
         members.forEach(m => {
             memberName_file_map[m.name] = f;
         })
-        f.error = null;
     }).catch(err=> {
         console.log(err);
         file_member_map[f.name] = [];
@@ -109,11 +121,13 @@ const handleOpenDialog = (context, path, files, options) => {
                                         .map(rt => `import { ${rt} } from './${getFileNameWithoutExt(memberName_file_map[rt].name)}';`)
                                         .join('\n');
             const fileContent = imports + '\n\n' + memberOutputs;
+            const filePath = `${path}\\${name}.ts`;
 
-            return fs.promises.writeFile(`${path}/${name}.ts`, fileContent)
+            f.tsPath = filePath;
+
+            return fs.promises.writeFile(filePath, fileContent)
         .then(()=>{
             f.checked = false;
-            f.error = null;
             f.created = true;
 
             return f;
@@ -129,7 +143,8 @@ const handleOpenDialog = (context, path, files, options) => {
 
             context.postMessage({
                 command: 'convert.response',
-                data: files
+                data: files,
+                uri: path
             })
         });   
     }); 

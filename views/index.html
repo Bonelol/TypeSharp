@@ -22,6 +22,21 @@
             margin-top: 8px;
         }
 
+        #folder-info {
+            margin-top:16px; 
+            margin-bottom:4px; 
+            visibility: hidden;
+        }
+
+        #folder-link {
+            cursor: pointer;
+        }
+
+        #folder-link-hidden {
+            display: none;
+            visibility: hidden;
+        }
+
         .monaco-text-button {
             color: rgb(255, 255, 255);
             background-color: rgb(14, 99, 156);
@@ -93,6 +108,25 @@
         span.icon.icon-created {
             background: green;
         }
+
+        span.error-msg {
+            min-width: 30px;
+            min-height: 32px;
+            padding: 6px 8px;
+            color: #000;
+            text-align: left;
+            text-decoration: none;
+            word-wrap: break-word;
+            background-color: #fff;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.15);
+            position: absolute;
+            display: none;
+        }
+
+        .file-item-misc:hover span.error-msg {
+            display: initial;
+        }
     </style>
 </head>
 <body>
@@ -101,7 +135,7 @@
         <div>
             Convert C# POCOs to TypeScript
         </div>
-        <div><a class="monaco-text-button" onclick="openFromFiles()">Select Files</a></div>
+        <div><a class="monaco-text-button" tabindex="Select Files" onclick="openFromFiles()">Select Files</a></div>
         <div style="display:flex; padding-top: 8px; padding-bottom: 8px;">
             <div id="fileListWrapper" style="display:none;">
                 <div class='file-item'>
@@ -116,8 +150,14 @@
             <div style="width:320px;">
                 <form id="optionForm">
                     <div id="options" style="display:none; text-align: right;">
-                        <div><a class="monaco-text-button" onclick="convertSelectedFiles()">Convert</a></div>
-                        <div>                        
+                        <div>
+                            <a class="monaco-text-button" title="Convert" onclick="convertSelectedFiles()">Convert</a>
+                            <div id='folder-info'>
+                                Generated files can be found at <a id='folder-link' onclick="openFolder(this)"></a>
+                                <a id='folder-link-hidden'></a>
+                            </div>
+                        </div>
+                        <div style="display:none;">                        
                             <div>
                                 <label><input type="checkbox" name="interface"></input>Export as interface</label>
                             </div>
@@ -130,7 +170,7 @@
                                 <label><input type="radio" name="convention" value='pascal'></input>Pascal</label>
                             </div>
                         </div>
-                        <div>
+                        <div style="display:none;">
                             <h5>Overwrite existed files?</h5>
                             <div>
                                 <label><input type="radio" name="overwrite" checked value='yes'></input>Yes</label>
@@ -220,8 +260,9 @@
     function createFileItemView(file) {
         const checked = file.checked ? 'checked' : '';
         const error = file.error ? '<span class="icon icon-error">!</span>' : '';
-        const errorMsg = file.error ? `<span style='display:none;'>${(file.error.message || file.error).toString()}</span>` : '';
+        const errorMsg = file.error ? `<span class='error-msg'>${(file.error.message || file.error).toString()}</span>` : '';
         const created = file.created ? '<span class="icon icon-created">&#10003;</span>' : '';
+        const fileName = file.created ? `<a class="file-link" href='${file.tsPath}' title='${file.tsPath}' onclick='openFile(this)'>${file.name}</a>` : file.name;
 
         if (file.error) {
             console.log(file.error);
@@ -230,25 +271,27 @@
         return `<div class='file-item' data-id=${file.id}>
                 <label>
                     <input type='checkbox' data-id=${file.id} ${checked} onchange='fileCheckBoxOnChange(this)'>
-                    <span>${file.name}</span>
+                    <span>${fileName}</span>
                 </label>
                 <div class='file-item-misc'>${error}${errorMsg}${created}</div>
             </div>`;
     }
 
-    function updateResponse(files, store) {
+    function updateResponse(files, uri, store) {
         store.files = files;
-        // const fileViews = document.getElementsByClassName('file-item');
+        const info = document.getElementById('folder-info');
+        const anchor = document.getElementById('folder-link');
+        const hidden = document.getElementById('folder-link-hidden');
+        const first = files.find(f => f.created);
+        anchor.innerText = uri;
+        anchor.href = uri;
+        anchor.title = uri;
+        hidden.innerText = first.tsPath;
+        hidden.href = first.tsPath;
 
-        // files.forEach(f => {
-        //     const view = document.querySelector(`.file-item[data-id='${f.id}']`);
-
-        //     if(f.error) {
-        //         view.classList.add('error');
-        //     } else {
-        //         view.classList.remove('error');
-        //     }
-        // });
+        if (first) {
+            info.style.visibility = 'initial';
+        }
 
         updateFileListView(files);
         updateToggleAllCheckbox();
@@ -260,7 +303,7 @@
                 updateFiles(message.data, store)
                 break;
             case 'convert.response':
-                updateResponse(message.data, store)
+                updateResponse(message.data, message.uri, store)
                 break;
         }
     }
@@ -302,6 +345,22 @@
         updateToggleAllCheckbox();
         
         vscode.setState(cachedStore);
+    }
+
+    function openFolder(self) {
+        const hidden = document.getElementById('folder-link-hidden');
+
+        vscode.postMessage({
+            command: 'open.folder',
+            data: hidden.href.replace('file:', '')
+        });
+    }
+
+    function openFile(self) {
+        vscode.postMessage({
+            command: 'open.folder',
+            data: self.href.replace('file:', '')
+        });
     }
 
     // Handle the message inside the webview
