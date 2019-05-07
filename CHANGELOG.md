@@ -6,7 +6,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.1.0] - 2019-05-07
 
-- Support convert multiple files
+- Support convert multiple files. Press CTL + P, and type '>Open TypeSharp convert window'
 
 ## [0.0.3] - 2019-03-28
 
