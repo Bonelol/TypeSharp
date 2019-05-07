@@ -20,7 +20,7 @@ N/A
 
 ### [0.1.0] - 2019-05-07
 
-- Support convert multiple files. Press CTL + P, and type '>Open TypeSharp convert window'
+- Support convert multiple files. Run command 'Open TypeSharp convert window'
 
 ### [0.0.3] - 2019-03-28
 
