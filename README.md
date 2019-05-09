@@ -8,7 +8,7 @@ In editor window press CTL+ALT+T OR run command 'Convert C# to TypeScript'. To c
 
 ![animation](https://raw.githubusercontent.com/Bonelol/TypeSharp/master/images/animation.gif)
 
-Convert multiple files
+Convert multiple files  
 ![multi](https://raw.githubusercontent.com/Bonelol/TypeSharp/master/images/animation2.gif)
 
 ## Requirements
