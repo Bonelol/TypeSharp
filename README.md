@@ -4,7 +4,7 @@ Convert C# POCOs to TypeScript
 
 ## How to use
 
-In editor window press CTL+ALT+T OR run command 'Convert C# to TypeScript'
+In editor window press CTL+ALT+T OR run command 'Convert C# to TypeScript'. To convert multiple files, run command 'Open TypeSharp convert window'
 
 ![animation](https://raw.githubusercontent.com/Bonelol/TypeSharp/master/images/animation.gif)
 
@@ -17,6 +17,10 @@ To generate parser, you will need [PEG.js](https://pegjs.org/).
 N/A
 
 ## Release Notes
+
+### [0.1.2] - 2019-05-10
+
+- Support converting c# classes to interfaces
 
 ### [0.1.0] - 2019-05-07
 

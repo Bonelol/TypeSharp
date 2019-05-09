@@ -2,15 +2,18 @@
 	"name": "typesharp",
 	"displayName": "TypeSharp",
 	"description": "Convert C# POCOs to TypeScript",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"publisher": "bonelol",
 	"repository": "https://github.com/Bonelol/TypeSharp",
 	"engines": {
 		"vscode": "^1.32.0"
 	},
 	"categories": [
-		"Other"
-	],
+		"Other", "Formatters"
+    ],
+    "keywords": [
+        "c#", "typescript", "csharp", "keybindings"
+    ],
 	"activationEvents": [
 		"onCommand:extension.typesharp.convert",
 		"onCommand:extension.typesharp.open"
