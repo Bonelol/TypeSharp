@@ -4,6 +4,10 @@ All notable changes to the "typesharp" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.0] - 2019-05-15
+
+- Add settings
+
 ## [0.1.2] - 2019-05-10
 
 - Support converting c# classes to interfaces

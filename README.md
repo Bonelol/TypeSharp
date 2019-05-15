@@ -21,6 +21,10 @@ N/A
 
 ## Release Notes
 
+### [0.2.0] - 2019-05-15
+
+- Add settings
+
 ### [0.1.2] - 2019-05-10
 
 - Support converting c# classes to interfaces

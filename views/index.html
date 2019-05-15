@@ -159,15 +159,15 @@
                         </div>
                         <div>                        
                             <div>
-                                <label><input type="checkbox" name="interface"></input>To interface</label>
+                                <label><input type="checkbox" name="interface" id="interfaceCheckbox"></input>To interface</label>
                             </div>
                         </div>
                         <div>
                             <h5>Property Naming Conventions</h5>
                             <div>
-                                <label><input type="radio" name="convention" checked value='no'></input>No change</label>
-                                <label><input type="radio" name="convention" value='camel'></input>Camel</label>
-                                <label><input type="radio" name="convention" value='pascal'></input>Pascal</label>
+                                <label><input type="radio" name="convention" checked value='no' id="noChangeRadio"></input>No change</label>
+                                <label><input type="radio" name="convention" value='camel' id="camelRadio"></input>Camel</label>
+                                <label><input type="radio" name="convention" value='pascal' id="pascalRadio"></input>Pascal</label>
                             </div>
                         </div>
                         <div style="display:none;">
@@ -305,6 +305,9 @@
             case 'convert.response':
                 updateResponse(message.data, message.uri, store)
                 break;
+            case 'load.config':
+                updateConfig(message.data, store)
+                break;
         }
     }
 
@@ -363,6 +366,35 @@
         });
     }
 
+    function updateConfig(config, store) {
+        const interfaceCheckbox = document.getElementById('interfaceCheckbox');
+        const nochangeRadio = document.getElementById('noChangeRadio');
+        const camelRadio = document.getElementById('camelRadio');
+        const pascalRadio = document.getElementById('pascalRadio');
+
+        interfaceCheckbox.checked = config.classToInterface;
+
+        switch (config.propertyConvention) {
+            case 'nochange':
+                nochangeRadio.checked = true;
+                camelRadio.checked = false;
+                pascalRadio.checked = false;
+                break;
+            case 'camel':
+                nochangeRadio.checked = false;
+                camelRadio.checked = true;
+                pascalRadio.checked = false;
+                break;
+            case 'pascal':
+                nochangeRadio.checked = false;
+                camelRadio.checked = false;
+                pascalRadio.checked = true;
+                break;
+        }
+
+        store.config = config;
+    }
+
     // Handle the message inside the webview
     window.addEventListener('message', event => {
         const message = event.data; // The JSON data our extension sent
@@ -378,6 +410,10 @@
     (function() {    
         if(cachedStore && cachedStore.files) {
             updateFileListView(cachedStore.files);
+        }
+
+        if(cachedStore && cachedStore.config) {
+            updateConfig(cachedStore.config);
         }
     })();
 </script>

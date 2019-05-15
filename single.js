@@ -29,10 +29,16 @@ function registerConvertCommand(context) {
 
         try {
             const parsed = parser.parse(content);
+            const config = util.getConfiguration();
+            const outputOptions = {
+                outputTs: true,
+                interface: config.classToInterface,
+                convention: config.propertyConvention
+            }
             const members = parsed.members && parsed.members.length > 0 ? parsed.members : util.flatMap(parsed.namespace_blocks, namespace => namespace.members);
-            const memberOutputs = members.map(c => util.createMemberOutput(c, { outputTs: true }));
+            const memberOutputs = members.map(c => util.createMemberOutput(c, outputOptions));
 
-            if(!isTypeScript) {
+            if(config.newWindow) {
                 var outputs = memberOutputs.join('\n');
                 vscode.workspace.openTextDocument({ language:'typescript', content: outputs })
                     .then(doc => vscode.window.showTextDocument(doc, editor.viewColumn + 1));

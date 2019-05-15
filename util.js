@@ -1,7 +1,7 @@
+const vscode = require('vscode');
 const flatMap = (xs, f) =>
   xs.reduce((acc,x) =>
     acc.concat(f(x)), []);
-
 const TAB = '    '
 
 function createMemberOutput(member, options) {
@@ -96,7 +96,22 @@ const typeNameMappings = {
     'Dictionary' :'Map',
 }
 
+const packagename = 'typesharp'
+
+function getConfiguration() {
+    const propertyConvention = vscode.workspace.getConfiguration(packagename).get("propertyConvention");
+    const newWindow = vscode.workspace.getConfiguration(packagename).get("newWindow");
+    const classToInterface = vscode.workspace.getConfiguration(packagename).get("classToInterface");
+
+    return {
+        propertyConvention,
+        newWindow,
+        classToInterface
+    };
+}
+
 module.exports = {
     flatMap: flatMap,
-    createMemberOutput: createMemberOutput
+    createMemberOutput: createMemberOutput,
+    getConfiguration: getConfiguration
 };

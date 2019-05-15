@@ -22,6 +22,13 @@ function registerOpenCommand(context) {
         const indexFilePath = vscode.Uri.file(path.join(context.extensionPath, 'views', 'index.html'));
         panel.webview.html = fs.readFileSync(indexFilePath.fsPath, 'utf8');
 
+        //load configs
+        const config = util.getConfiguration();
+        panel.webview.postMessage({
+            command: 'load.config',
+            data: config
+        })
+
         // Handle messages from the webview
         panel.webview.onDidReceiveMessage(
             message => handleMessage(panel.webview, message),
