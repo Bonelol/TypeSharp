@@ -21,6 +21,13 @@ N/A
 
 ## Release Notes
 
+### [0.3.0] - 2019-07-20
+
+- Fix constructor parsing issue
+- Fix camel case issue
+- Add an option to generate all fields as optional
+- Support nullable fields
+
 ### [0.2.0] - 2019-05-15
 
 - Add settings

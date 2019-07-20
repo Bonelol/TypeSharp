@@ -162,6 +162,11 @@
                                 <label><input type="checkbox" name="interface" id="interfaceCheckbox"></input>To interface</label>
                             </div>
                         </div>
+                        <div>                        
+                            <div>
+                                <label><input type="checkbox" name="optional" id="optionalCheckbox"></input>Optinal Fields</label>
+                            </div>
+                        </div>
                         <div>
                             <h5>Property Naming Conventions</h5>
                             <div>
@@ -204,6 +209,7 @@
             interface: formData.get('interface'),
             convention: formData.get('convention'),
             overwrite:  formData.get('overwrite'),
+            optional: formData.get('optional'),
             files: selectedFiles
         }
 
@@ -368,11 +374,13 @@
 
     function updateConfig(config, store) {
         const interfaceCheckbox = document.getElementById('interfaceCheckbox');
+        const optionalCheckbox = document.getElementById('optionalCheckbox');
         const nochangeRadio = document.getElementById('noChangeRadio');
         const camelRadio = document.getElementById('camelRadio');
         const pascalRadio = document.getElementById('pascalRadio');
 
         interfaceCheckbox.checked = config.classToInterface;
+        optionalCheckbox.checked = config.optionalFields;
 
         switch (config.propertyConvention) {
             case 'nochange':

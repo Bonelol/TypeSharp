@@ -1,4 +1,5 @@
 const vscode = require('vscode');
+const camelCase = require('camelCase');
 const flatMap = (xs, f) =>
   xs.reduce((acc,x) =>
     acc.concat(f(x)), []);
@@ -26,16 +27,16 @@ function createClassOutput(c, options) {
 
 function createPropertyOutput(property, options) {
     let name = property.name;
+    let optional = options.optional ? '?' : '';
 
     if (options.convention === 'camel') {
-        name = name.replace(/\w+/g,
-            function(w){return w[0].toLowerCase() + w.slice(1);})
+        name = camelCase(name)
     } else if (options.convention === 'pascal') {
         name = name.replace(/\w+/g,
             function(w){return w[0].toUpperCase() + w.slice(1);})
     }
 
-    return options.outputTs ? `${name} : ${createTypeOutput(property.return_type)};` : name + ';';
+    return options.outputTs ? `${name}${optional} : ${createTypeOutput(property.return_type)};` : name + ';';
 }
 
 function createTypeOutput(type) {
@@ -44,13 +45,13 @@ function createTypeOutput(type) {
     }
 
     if(!type.is_generic) {
-        return checkTypeName(type.name);
+        return checkType(type);
     }
 
-    const typeName = checkTypeName(type.base_type.name);
+    const typeName = checkType(type.base_type);
     const output = `${typeName}<${type.generic_parameters.map(parameter => createTypeOutput(parameter)).join(',')}>`
 
-    return output;
+    return type.is_nullable ? `${output} | undefined | null` : output;
 }
 
 function createEnumOutput(e) {
@@ -62,8 +63,9 @@ function createEnumMemberOutput(member) {
     return member.value == null ? member.name : `${member.name} = ${member.value}`
 }
 
-function checkTypeName(name) {
-    return typeNameMappings[name] || name;
+function checkType(type) {
+    let output = typeNameMappings[type.name] || type.name;
+    return type.is_nullable ? `${output} | undefined | null` : output;
 }
 
 const typeNameMappings = {
@@ -102,11 +104,13 @@ function getConfiguration() {
     const propertyConvention = vscode.workspace.getConfiguration(packagename).get("propertyConvention");
     const newWindow = vscode.workspace.getConfiguration(packagename).get("newWindow");
     const classToInterface = vscode.workspace.getConfiguration(packagename).get("classToInterface");
+    const optionalField = vscode.workspace.getConfiguration(packagename).get("optionalField");
 
     return {
         propertyConvention,
         newWindow,
-        classToInterface
+        classToInterface,
+        optionalField
     };
 }
 

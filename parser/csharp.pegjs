@@ -170,7 +170,8 @@ implemented_types = COLON __ head:type tail:(__ COMMA __ type)* {
 }
 
 class_member
-= property_definition
+= constructor_definition
+/ property_definition
 / method_definition
 / field_definition
 
@@ -190,22 +191,22 @@ __ d:block? {
         parameters: params,
         generic_parameters: g,
         type_constraints: t,
-        type: 'constructor'
+        type: 'constructor',
+        base: b
     }
 }
 
 base_class_constructor
-= COLON __ 'base' __ LPAREN __ head:ident tail:(__ COMMA __ ident) __ RPAREN {
-    const first = head.join('')
-    const others = tail.map(t => t[3].join(''))
+= COLON __ 'base' __ LPAREN __ head:base_class_constructor_parameter tail:(__ COMMA __ base_class_constructor_parameter)* __ RPAREN {
+    const first = head
+    const others = tail.map(t => t[3])
 
     return [first].concat(others)
 }
 
 base_class_constructor_parameter
-= ident
-/ parameter_value
-/ new_operator
+= parameter_value
+/ ident
 
 new_operator = NEW 
 __ i:ident 

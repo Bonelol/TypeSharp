@@ -82,7 +82,8 @@ function handleMessage(context, message) {
                     outputTs: true,
                     interface: message.data.interface,
                     convention: message.data.convention,
-                    overwrite:  message.data.overwrite,
+                    overwrite: message.data.overwrite,
+                    optional: message.optional
                 }
 
                 handleOpenDialog(context, path, message.data.files, outputOptions);

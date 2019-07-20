@@ -2,18 +2,22 @@
 	"name": "typesharp",
 	"displayName": "TypeSharp",
 	"description": "Convert C# POCOs to TypeScript",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"publisher": "bonelol",
 	"repository": "https://github.com/Bonelol/TypeSharp",
 	"engines": {
 		"vscode": "^1.32.0"
 	},
 	"categories": [
-		"Other", "Formatters"
-    ],
-    "keywords": [
-        "c#", "typescript", "csharp", "keybindings"
-    ],
+		"Other",
+		"Formatters"
+	],
+	"keywords": [
+		"c#",
+		"typescript",
+		"csharp",
+		"keybindings"
+	],
 	"activationEvents": [
 		"onCommand:extension.typesharp.convert",
 		"onCommand:extension.typesharp.open"
@@ -35,30 +39,43 @@
 				"command": "extension.typesharp.convert",
 				"key": "ctrl+alt+t"
 			}
-        ],
-        "configuration": {
-            "type": "object",
-            "title": "TypeSharp",
-            "properties": {
-                "typesharp.propertyConvention": {
-                    "type": "string",
-                    "default": "unchange",
-                    "enum": ["nochange", "camel", "pascal"],
-                    "enumDescriptions": ["No change", "Camel Case", "Pascal Case"],
-                    "description": "Options are camelCase, pascal and unchange. Default is unchange"
-                },
-                "typesharp.newWindow": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "True to show converted results in a new window. Default is true"
-                },
-                "typesharp.classToInterface": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "True to convert class to interface. Default is false"
-                }
-            }
-        }
+		],
+		"configuration": {
+			"type": "object",
+			"title": "TypeSharp",
+			"properties": {
+				"typesharp.propertyConvention": {
+					"type": "string",
+					"default": "unchange",
+					"enum": [
+						"nochange",
+						"camel",
+						"pascal"
+					],
+					"enumDescriptions": [
+						"No change",
+						"Camel Case",
+						"Pascal Case"
+					],
+					"description": "Options are camelCase, pascal and unchange. Default is unchange"
+				},
+				"typesharp.newWindow": {
+					"type": "boolean",
+					"default": true,
+					"description": "True to show converted results in a new window. Default is true"
+				},
+				"typesharp.classToInterface": {
+					"type": "boolean",
+					"default": false,
+					"description": "True to convert class to interface. Default is false"
+				},
+				"typesharp.optionalField": {
+					"type": "boolean",
+					"default": false,
+					"description": "True to output fields as optional. Default is false"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"postinstall": "node ./node_modules/vscode/bin/install",
@@ -72,6 +89,7 @@
 		"@types/mocha": "^2.2.42"
 	},
 	"dependencies": {
+		"camelcase": "^5.3.1",
 		"js-yaml": "^3.13.1"
 	}
 }

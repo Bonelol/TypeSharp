@@ -33,7 +33,8 @@ function registerConvertCommand(context) {
             const outputOptions = {
                 outputTs: true,
                 interface: config.classToInterface,
-                convention: config.propertyConvention
+                convention: config.propertyConvention,
+                optional: config.optionalField
             }
             const members = parsed.members && parsed.members.length > 0 ? parsed.members : util.flatMap(parsed.namespace_blocks, namespace => namespace.members);
             const memberOutputs = members.map(c => util.createMemberOutput(c, outputOptions));
