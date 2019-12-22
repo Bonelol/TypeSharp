@@ -128,7 +128,7 @@ const handleOpenDialog = (context, path, files, options) => {
             const imports = referencedTypes.filter(rt => memberName_file_map[rt])
                                         .map(rt => `import { ${rt} } from './${getFileNameWithoutExt(memberName_file_map[rt].name)}';`)
                                         .join('\n');
-            const fileContent = imports + '\n\n' + memberOutputs;
+            const fileContent = imports + '\n\n' + memberOutputs + '\n\n';
             const filePath = `${path}\\${name}.ts`;
 
             f.tsPath = filePath;

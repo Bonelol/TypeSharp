@@ -36,7 +36,7 @@ function createPropertyOutput(property, options) {
             function(w){return w[0].toUpperCase() + w.slice(1);})
     }
 
-    return options.outputTs ? `${name}${optional} : ${createTypeOutput(property.return_type)};` : name + ';';
+    return options.outputTs ? `${name}${optional}: ${createTypeOutput(property.return_type)};` : name + ';';
 }
 
 function createTypeOutput(type) {
