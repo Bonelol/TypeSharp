@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
 const path = require('path');
+const prettier = require('prettier');
 const parser = require('./parser/csharp');
 const fs = require('fs');
 const util = require('./util');
@@ -100,6 +101,7 @@ const handleOpenDialog = (context, path, files, options) => {
         f.created = false;
     });
 
+    const config = util.getConfiguration();
     const file_member_map = {};
     const memberName_file_map = {};
     const filePromises = files.map(f => fs.promises.readFile(f.path, 'utf8').then(content => {
@@ -128,7 +130,12 @@ const handleOpenDialog = (context, path, files, options) => {
             const imports = referencedTypes.filter(rt => memberName_file_map[rt])
                                         .map(rt => `import { ${rt} } from './${getFileNameWithoutExt(memberName_file_map[rt].name)}';`)
                                         .join('\n');
-            const fileContent = imports + '\n\n' + memberOutputs + '\n\n';
+            let fileContent = imports + '\n\n' + memberOutputs.join('\n') + '\n\n';
+            
+            if(config.prettier) {
+              fileContent = prettier.format(fileContent, { parser: 'typescript' });
+            }
+
             const filePath = `${path}\\${name}.ts`;
 
             f.tsPath = filePath;

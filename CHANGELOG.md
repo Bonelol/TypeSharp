@@ -4,6 +4,11 @@ All notable changes to the "typesharp" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.6.0] - 2020-02-10
+
+- Byte type will be convert to number in output.
+- Use Prettier for output formatting.
+
 ## [0.3.0] - 2019-07-20
 
 - Fix constructor parsing issue

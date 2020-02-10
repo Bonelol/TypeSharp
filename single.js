@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
-const path = require('path');
+const prettier = require('prettier');
 const util = require('./util');
 const parser = require('./parser/csharp');
 
@@ -39,9 +39,14 @@ function registerConvertCommand(context) {
             const members = parsed.members && parsed.members.length > 0 ? parsed.members : util.flatMap(parsed.namespace_blocks, namespace => namespace.members);
             const memberOutputs = members.map(c => util.createMemberOutput(c, outputOptions));
 
+            let output = memberOutputs.join('\n');
+
+            if(config.prettier){
+              output = prettier.format(output);
+            }
+
             if(config.newWindow) {
-                var outputs = memberOutputs.join('\n') + '\n\n';
-                vscode.workspace.openTextDocument({ language:'typescript', content: outputs })
+                vscode.workspace.openTextDocument({ language:'typescript', content: output })
                     .then(doc => vscode.window.showTextDocument(doc, editor.viewColumn + 1));
                 return;
             }
@@ -53,7 +58,7 @@ function registerConvertCommand(context) {
                 const start = new vscode.Position(0, 0);
                 const end = new vscode.Position(document.lineCount - 1, lastLine.text.length);
     
-                builder.replace(new vscode.Range(start, end), memberOutputs.join('\n'));
+                builder.replace(new vscode.Range(start, end), output);
             }); 
         } catch (error) {
             console.log(error);

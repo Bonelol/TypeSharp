@@ -2,7 +2,7 @@
 	"name": "typesharp",
 	"displayName": "TypeSharp",
 	"description": "Convert C# POCOs to TypeScript",
-	"version": "0.5.0",
+	"version": "0.6.0",
 	"publisher": "bonelol",
 	"repository": "https://github.com/Bonelol/TypeSharp",
 	"engines": {
@@ -73,6 +73,11 @@
 					"type": "boolean",
 					"default": false,
 					"description": "True to output fields as optional. Default is false"
+        },
+        "typesharp.prettier": {
+					"type": "boolean",
+					"default": true,
+					"description": "Format outputs"
 				}
 			}
 		}
@@ -90,6 +95,7 @@
 	},
 	"dependencies": {
 		"camelcase": "^5.3.1",
-		"js-yaml": "^3.13.1"
+		"js-yaml": "^3.13.1",
+		"prettier": "^1.19.1"
 	}
 }

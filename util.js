@@ -71,18 +71,26 @@ function checkType(type) {
 const typeNameMappings = {
     'short' :'number',
     'Short' :'number',
+    'ushort' :'number',
+    'long' :'number',
+    'ulong' :'number',
     'int' :'number',
     'Int16' :'number',
+    'UInt16' :'number',
     'Int32' :'number',
+    'UInt32' :'number',
     'Int64' :'number',
+    'UInt64' :'number',
     'double' :'number',
     'Double' :'number',
     'decimal' :'number',
     'Decimal' :'number',
     'float' :'number',
     'Float' :'number',
-    'long' :'number',
-    'Long' :'number',
+    'byte' :'number',
+    'Byte' :'number',
+    'sbyte' :'number',
+    'SByte' :'number',
 
     'bool' :'boolean',
     'Boolean' :'boolean',
@@ -105,12 +113,14 @@ function getConfiguration() {
     const newWindow = vscode.workspace.getConfiguration(packagename).get("newWindow");
     const classToInterface = vscode.workspace.getConfiguration(packagename).get("classToInterface");
     const optionalField = vscode.workspace.getConfiguration(packagename).get("optionalField");
+    const prettier = vscode.workspace.getConfiguration(packagename).get("prettier");
 
     return {
         propertyConvention,
         newWindow,
         classToInterface,
-        optionalField
+        optionalField,
+        prettier
     };
 }
 
